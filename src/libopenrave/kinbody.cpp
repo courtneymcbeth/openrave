@@ -5151,6 +5151,37 @@ bool KinBody::IsAttached(const KinBody &body) const
     return _IsAttached(body.GetEnvironmentBodyIndex(), vAttachedVisited);
 }
 
+void KinBody::GetDirectlyAttached(std::vector<KinBodyPtr>& vAttached) const
+{
+    // Clear output and prepare
+    vAttached.clear();
+    vAttached.reserve(_listAttachedBodies.size());
+
+    // The list of attached bodies is not unique, so deduplicate as we go
+    std::unordered_set<const KinBody*> visitedBodies;
+
+    // For each weakly attached body, check if it is still present and if so add it to the output if we haven't already
+    for (const KinBodyWeakPtr& weakAttachedBody : _listAttachedBodies) {
+        // Ignore any bodies that are no longer live
+        KinBodyPtr attachedBody = weakAttachedBody.lock();
+        if (!attachedBody) {
+            continue;
+        }
+
+        // Ignore any bodies that are already present in our visited set
+        const KinBody* const kinBodyRawPtr = attachedBody.get();
+        if (visitedBodies.find(kinBodyRawPtr) != visitedBodies.end()) {
+            continue;
+        }
+
+        // If this is a new body, add it to the output
+        vAttached.emplace_back(std::move(attachedBody)); // Invalidates attachedBody
+
+        // Add this body pointer to our visted set
+        visitedBodies.emplace(kinBodyRawPtr);
+    }
+}
+
 void KinBody::GetAttached(std::set<KinBodyPtr>& setAttached) const
 {
     setAttached.clear();

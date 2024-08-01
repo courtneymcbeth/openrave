@@ -3227,6 +3227,11 @@ private:
     /// \param[out] vAttached fills with the environment body index of attached bodies sorted in ascending order.
     void GetAttachedEnvironmentBodyIndices(std::vector<int>& vAttached) const;
 
+    /// \brief Get a list of bodies that are directly attached to this body, _not_ including this body.
+    ///
+    /// \param[out] vAttached unique list of bodies that are directly attached to this body
+    void GetDirectlyAttached(std::vector<KinBodyPtr>& vAttached) const;
+
     /// \brief return true if there are attached bodies. Used in place of GetAttached for quicker computation.
     inline bool HasAttached() const {
         return _listAttachedBodies.size() > 0;

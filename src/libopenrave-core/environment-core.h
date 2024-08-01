@@ -3487,9 +3487,14 @@ protected:
         }
         KinBody& body = *pbodyref;
         const std::string& name = body.GetName();
-        // before deleting, make sure no other bodies are grabbing it!!
-        for (KinBodyPtr& potherbody : _vecbodies) {
-            if( !!potherbody && potherbody->IsGrabbing(body) ) {
+
+        // Before deleting a body, ensure that no other bodies are still grabbing it.
+        // Since all grabbing bodies should be in the attached set for this body, we can localize the search to these bodies.
+        // Otherwise we have to scan the entire environment, which is slow for scenes with many bodies in them
+        std::vector<OpenRAVE::KinBodyPtr> attachedBodies;
+        body.GetDirectlyAttached(attachedBodies);
+        for (KinBodyPtr& potherbody : attachedBodies) {
+            if (!!potherbody && potherbody->IsGrabbing(body)) {
                 RAVELOG_WARN_FORMAT("env=%s, remove %s already grabbed by body %s!", GetNameId()%body.GetName()%potherbody->GetName());
                 potherbody->Release(body);
             }
