@@ -3497,7 +3497,7 @@ protected:
         body.GetDirectlyAttached(attachedBodies);
         for (KinBodyPtr& potherbody : attachedBodies) {
             if (!!potherbody && potherbody->IsGrabbing(body)) {
-                RAVELOG_WARN_FORMAT("env=%s, remove %s already grabbed by body %s!", GetNameId()%body.GetName()%potherbody->GetName());
+                RAVELOG_WARN_FORMAT("env=%s, remove '%s' already grabbed by body '%s'!", GetNameId()%body.GetName()%potherbody->GetName());
                 potherbody->Release(body);
             }
         }
