@@ -6,10 +6,6 @@
 #include <memory> // c++11
 #include <vector>
 
-#include <fcl/fcl.h>
-#include <fcl/geometry/collision_geometry.h>
-#include <fcl/narrowphase/collision_object.h>
-
 namespace fclrave
 {
 

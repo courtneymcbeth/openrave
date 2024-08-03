@@ -93,12 +93,6 @@ using OpenRAVE::TransformConstPtr;
 using OpenRAVE::TransformMatrix;
 using OpenRAVE::Vector;
 
-// #include <fcl/narrowphase/collision.h>
-// #include <fcl/narrowphase/distance.h>
-// #include <fcl/geometry/bvh/BVH_model.h>
-// #include <fcl/broadphase/broadphase_collision_manager.h>
 #include <fcl/fcl.h>
-#include <fcl/geometry/collision_geometry.h>
-#include <fcl/narrowphase/collision_object.h>
 
 #endif
