@@ -21,6 +21,7 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 # Use, i.e. don't skip the full RPATH for the build tree
 set(CMAKE_SKIP_BUILD_RPATH  FALSE)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-shadow")
 
 # When building, don't use the install RPATH already
 # (but later on when installing)
@@ -43,7 +44,7 @@ option(OPT_OCTAVE "Build octave bindings" OFF)
 option(OPT_MATLAB "Build matlab bindings" OFF)
 option(OPT_STATIC "Build static libraries" OFF)
 option(OPT_COLLADA "Build with COLLADA support" ON)
-option(OPT_BULLET "Use Bullet Collision/Physics if available" OFF)
+option(OPT_BULLET "Use Bullet Collision/Physics if available" ON)
 option(OPT_ODE_COLLISION "Use ODE collision checker if available" ON)
 option(OPT_FCL_COLLISION "Use FCL collision checker if available" ON)
 option(OPT_QTCOIN_VIEWER "Use QT/Coin Viewer if available" ON)

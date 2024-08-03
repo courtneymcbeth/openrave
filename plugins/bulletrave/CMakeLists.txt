@@ -5,7 +5,7 @@ if( OPT_BULLET )
   pkg_check_modules(bullet bullet)
 
   if(bullet_FOUND)
-    if( "${bullet_VERSION}" VERSION_GREATER "2.82" )
+    if( "${bullet_VERSION}" VERSION_LESS "3.00" )
       message(STATUS "unsupported bullet version ${bullet_VERSION}")
     else()
       include_directories(${bullet_INCLUDE_DIRS})
@@ -13,7 +13,9 @@ if( OPT_BULLET )
 
       add_library(bulletrave SHARED bulletrave.cpp bulletcollision.h bulletphysics.h  bulletspace.h  plugindefs.h)
 
-      #message(STATUS "Bullet found ${bullet_INCLUDE_DIRS}, libs: ${bullet_LIBRARIES}, cflags=${bullet_CFLAGS_OTHER}, lflags=${bullet_LDFLAGS_OTHER}, building bulletrave plugin")
+      set(bullet_CFLAGS_OTHER "${bullet_CFLAGS_OTHER} -Wno-shadow")
+
+      message(STATUS "Bullet found ${bullet_INCLUDE_DIRS}, libs: ${bullet_LIBRARIES}, cflags=${bullet_CFLAGS_OTHER}, lflags=${bullet_LDFLAGS_OTHER}, building bulletrave plugin")
 
       target_link_libraries(bulletrave PRIVATE boost_assertion_failed PUBLIC libopenrave ${bullet_LIBRARIES})
 

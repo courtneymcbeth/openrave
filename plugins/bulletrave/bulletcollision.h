@@ -20,7 +20,7 @@ class BulletCollisionChecker : public CollisionCheckerBase
 private:
     class CollisionFilterCallback : public OpenRAVEFilterCallback
     {
-public:
+    public:
         CollisionFilterCallback(CollisionCheckerBasePtr pchecker, KinBodyConstPtr pbody) : _pchecker(pchecker), _pbody(pbody)
         {
             _bActiveDOFs = !!(pchecker->GetCollisionOptions() & OpenRAVE::CO_ActiveDOFs);
@@ -28,30 +28,39 @@ public:
 
         bool IsActiveLink(KinBodyConstPtr pbody, int linkindex) const
         {
-            if( !_bActiveDOFs || !_pbody || !_pbody->IsRobot()) {
+            if (!_bActiveDOFs || !_pbody || !_pbody->IsRobot())
+            {
                 return true;
             }
             RobotBaseConstPtr probot = OpenRAVE::RaveInterfaceConstCast<RobotBase>(_pbody);
-            if( pbody != _pbody ) {
+            if (pbody != _pbody)
+            {
                 // pbody could be attached to a robot's link that is not active!
                 KinBody::LinkConstPtr pgrabbinglink = probot->IsGrabbing(pbody);
-                if( !pgrabbinglink ) {
+                if (!pgrabbinglink)
+                {
                     return true;
                 }
                 linkindex = pgrabbinglink->GetIndex();
             }
-            if( _vactivelinks.size() == 0 ) {
-                if( probot->GetAffineDOF() ) {
+            if (_vactivelinks.size() == 0)
+            {
+                if (probot->GetAffineDOF())
+                {
                     // enable everything
-                    _vactivelinks.resize(probot->GetLinks().size(),1);
+                    _vactivelinks.resize(probot->GetLinks().size(), 1);
                 }
-                else {
-                    _vactivelinks.resize(probot->GetLinks().size(),0);
+                else
+                {
+                    _vactivelinks.resize(probot->GetLinks().size(), 0);
                     // only check links that can potentially move with respect to each other
-                    _vactivelinks.resize(probot->GetLinks().size(),0);
-                    for(size_t i = 0; i < probot->GetLinks().size(); ++i) {
-                        FOREACHC(itindex, probot->GetActiveDOFIndices()) {
-                            if( probot->DoesAffect(probot->GetJointFromDOFIndex(*itindex)->GetJointIndex(),i) ) {
+                    _vactivelinks.resize(probot->GetLinks().size(), 0);
+                    for (size_t i = 0; i < probot->GetLinks().size(); ++i)
+                    {
+                        FOREACHC(itindex, probot->GetActiveDOFIndices())
+                        {
+                            if (probot->DoesAffect(probot->GetJointFromDOFIndex(*itindex)->GetJointIndex(), i))
+                            {
                                 _vactivelinks[i] = 1;
                                 break;
                             }
@@ -59,17 +68,19 @@ public:
                     }
                 }
             }
-            return _vactivelinks.at(linkindex)>0;
+            return _vactivelinks.at(linkindex) > 0;
         }
 
         virtual bool CheckLinks(KinBody::LinkPtr plink0, KinBody::LinkPtr plink1) const
         {
             KinBodyPtr pbody0 = plink0->GetParent();
             KinBodyPtr pbody1 = plink1->GetParent();
-            if( pbody0->IsAttached(pbody1) ) {
+            if (pbody0->IsAttached(pbody1))
+            {
                 return false;
             }
-            if( !IsActiveLink(pbody0,plink0->GetIndex()) || !IsActiveLink(pbody1,plink1->GetIndex()) ) {
+            if (!IsActiveLink(pbody0, plink0->GetIndex()) || !IsActiveLink(pbody1, plink1->GetIndex()))
+            {
                 return false;
             }
 
@@ -77,25 +88,29 @@ public:
             return _pbody->IsAttached(pbody0) || _pbody->IsAttached(pbody1);
         }
 
-protected:
+    protected:
         CollisionCheckerBasePtr _pchecker;
         CollisionReportPtr _report;
         KinBodyConstPtr _pbody;
-private:
+
+    private:
         bool _bActiveDOFs;
-        mutable vector<uint8_t> _vactivelinks;     ///< active links for _pbody, only valid if _pbody is a robot
+        mutable vector<uint8_t> _vactivelinks; ///< active links for _pbody, only valid if _pbody is a robot
     };
 
     class KinBodyFilterCallback : public CollisionFilterCallback
     {
-public:
-        KinBodyFilterCallback(CollisionCheckerBasePtr pchecker, KinBodyConstPtr pbody, KinBodyConstPtr pbody1=KinBodyConstPtr()) : CollisionFilterCallback(pchecker,pbody), _pbody1(pbody1) {
+    public:
+        KinBodyFilterCallback(CollisionCheckerBasePtr pchecker, KinBodyConstPtr pbody, KinBodyConstPtr pbody1 = KinBodyConstPtr()) : CollisionFilterCallback(pchecker, pbody), _pbody1(pbody1)
+        {
         }
 
         virtual bool CheckLinks(KinBody::LinkPtr plink0, KinBody::LinkPtr plink1) const
         {
-            if( CollisionFilterCallback::CheckLinks(plink0,plink1) ) {
-                if( !!_pbody1 ) {
+            if (CollisionFilterCallback::CheckLinks(plink0, plink1))
+            {
+                if (!!_pbody1)
+                {
                     // wants collisions only between _pbody0 and _pbody1
                     KinBodyPtr pbody0 = plink0->GetParent();
                     KinBodyPtr pbody1 = plink1->GetParent();
@@ -107,44 +122,50 @@ public:
             return false;
         }
 
-protected:
+    protected:
         KinBodyConstPtr _pbody1;
     };
 
     class KinBodyFilterExCallback : public KinBodyFilterCallback
     {
-public:
-        KinBodyFilterExCallback(CollisionCheckerBasePtr pchecker, KinBodyConstPtr pbody, const std::vector<KinBodyConstPtr>& vbodyexcluded) : KinBodyFilterCallback(pchecker,pbody), _vbodyexcluded(vbodyexcluded) {
+    public:
+        KinBodyFilterExCallback(CollisionCheckerBasePtr pchecker, KinBodyConstPtr pbody, const std::vector<KinBodyConstPtr> &vbodyexcluded) : KinBodyFilterCallback(pchecker, pbody), _vbodyexcluded(vbodyexcluded)
+        {
         }
 
         virtual bool CheckLinks(KinBody::LinkPtr plink0, KinBody::LinkPtr plink1) const
         {
             KinBodyPtr pbody0 = plink0->GetParent();
             KinBodyPtr pbody1 = plink1->GetParent();
-            if( find(_vbodyexcluded.begin(),_vbodyexcluded.end(),pbody0) != _vbodyexcluded.end() || find(_vbodyexcluded.begin(),_vbodyexcluded.end(),pbody1) != _vbodyexcluded.end() ) {
+            if (find(_vbodyexcluded.begin(), _vbodyexcluded.end(), pbody0) != _vbodyexcluded.end() || find(_vbodyexcluded.begin(), _vbodyexcluded.end(), pbody1) != _vbodyexcluded.end())
+            {
                 return false;
             }
-            return KinBodyFilterCallback::CheckLinks(plink0,plink1);
+            return KinBodyFilterCallback::CheckLinks(plink0, plink1);
         }
 
-        const std::vector<KinBodyConstPtr>& _vbodyexcluded;
+        const std::vector<KinBodyConstPtr> &_vbodyexcluded;
     };
 
     class LinkFilterCallback : public OpenRAVEFilterCallback
     {
-public:
-        LinkFilterCallback() : OpenRAVEFilterCallback() {
+    public:
+        LinkFilterCallback() : OpenRAVEFilterCallback()
+        {
         }
 
-        virtual bool CheckLinks(KinBody::LinkPtr plink0, KinBody::LinkPtr plink1)  const
+        virtual bool CheckLinks(KinBody::LinkPtr plink0, KinBody::LinkPtr plink1) const
         {
-            if( !!_pcollink1 ) {
-                BOOST_ASSERT( !!_pcollink0 );
+            if (!!_pcollink1)
+            {
+                BOOST_ASSERT(!!_pcollink0);
                 // wants collisions only between specific links
                 return (plink0 == _pcollink0 && plink1 == _pcollink1) || (plink0 == _pcollink1 && plink1 == _pcollink0);
             }
-            else {
-                if( plink0->GetParent()->IsAttached(plink1->GetParent()) ) {
+            else
+            {
+                if (plink0->GetParent()->IsAttached(plink1->GetParent()))
+                {
                     return false;
                 }
                 return plink0 == _pcollink0 || plink1 == _pcollink0;
@@ -156,37 +177,41 @@ public:
 
     class LinkAdjacentFilterCallback : public OpenRAVEFilterCallback
     {
-public:
-        LinkAdjacentFilterCallback(KinBodyConstPtr pparent, const std::vector<int>& setadjacency) : OpenRAVEFilterCallback(), _pparent(pparent), _setadjacency(setadjacency) {
+    public:
+        LinkAdjacentFilterCallback(KinBodyConstPtr pparent, const std::vector<int> &setadjacency) : OpenRAVEFilterCallback(), _pparent(pparent), _setadjacency(setadjacency)
+        {
         }
 
         virtual bool CheckLinks(KinBody::LinkPtr plink0, KinBody::LinkPtr plink1) const
         {
-            if(  plink0->GetParent() != _pparent ||plink1->GetParent() != _pparent ) {
+            if (plink0->GetParent() != _pparent || plink1->GetParent() != _pparent)
+            {
                 return false;
             }
             // check if links are in adjacency list
             int index0 = plink0->GetIndex();
             int index1 = plink1->GetIndex();
-            return find(_setadjacency.begin(), _setadjacency.end(), index0|(index1<<16)) != _setadjacency.end() || find(_setadjacency.begin(), _setadjacency.end(), index1|(index0<<16)) != _setadjacency.end();
+            return find(_setadjacency.begin(), _setadjacency.end(), index0 | (index1 << 16)) != _setadjacency.end() || find(_setadjacency.begin(), _setadjacency.end(), index1 | (index0 << 16)) != _setadjacency.end();
         }
 
         KinBodyConstPtr _pparent;
-        const std::vector<int>& _setadjacency;
+        const std::vector<int> &_setadjacency;
     };
 
     class KinBodyLinkFilterCallback : public OpenRAVEFilterCallback
     {
-public:
-        KinBodyLinkFilterCallback() : OpenRAVEFilterCallback() {
+    public:
+        KinBodyLinkFilterCallback() : OpenRAVEFilterCallback()
+        {
         }
 
         virtual bool CheckLinks(KinBody::LinkPtr plink0, KinBody::LinkPtr plink1) const
         {
-            BOOST_ASSERT( !!_pcollink && !!_pbody );
+            BOOST_ASSERT(!!_pcollink && !!_pbody);
             KinBodyPtr pbody0 = plink0->GetParent();
             KinBodyPtr pbody1 = plink1->GetParent();
-            if( pbody0->IsAttached(pbody1) ) {
+            if (pbody0->IsAttached(pbody1))
+            {
                 return false;
             }
             return (plink0 == _pcollink && _pbody->IsAttached(pbody1)) || (plink1 == _pcollink && _pbody->IsAttached(pbody0));
@@ -198,18 +223,21 @@ public:
 
     class btOpenraveDispatcher : public btCollisionDispatcher
     {
-public:
-        btOpenraveDispatcher(BulletCollisionChecker* pchecker, btCollisionConfiguration* collisionConfiguration) : btCollisionDispatcher(collisionConfiguration), _pchecker(pchecker) {
+    public:
+        btOpenraveDispatcher(BulletCollisionChecker *pchecker, btCollisionConfiguration *collisionConfiguration) : btCollisionDispatcher(collisionConfiguration), _pchecker(pchecker)
+        {
         }
 
         // need special collision function
-        virtual bool needsCollision(btCollisionObject* co0, btCollisionObject* co1)
+        virtual bool needsCollision(btCollisionObject *co0, btCollisionObject *co1)
         {
-            if( btCollisionDispatcher::needsCollision(co0, co1) ) {
+            if (btCollisionDispatcher::needsCollision(co0, co1))
+            {
                 KinBody::LinkPtr plink0 = GetLinkFromCollision(co0);
                 KinBody::LinkPtr plink1 = GetLinkFromCollision(co1);
-                OpenRAVEFilterCallback* popenravefilt = dynamic_cast<OpenRAVEFilterCallback*>(_poverlapfilt);
-                if( !!popenravefilt && !popenravefilt->CheckLinks(plink0,plink1) ) {
+                OpenRAVEFilterCallback *popenravefilt = dynamic_cast<OpenRAVEFilterCallback *>(_poverlapfilt);
+                if (!!popenravefilt && !popenravefilt->CheckLinks(plink0, plink1))
+                {
                     return false;
                 }
                 // recheck the broadphase again
@@ -219,15 +247,17 @@ public:
             return false;
         }
 
-        btOverlapFilterCallback* _poverlapfilt;
-private:
-        BulletCollisionChecker* _pchecker;
+        btOverlapFilterCallback *_poverlapfilt;
+
+    private:
+        BulletCollisionChecker *_pchecker;
     };
 
     class SetFilterScope
     {
-public:
-        SetFilterScope(boost::shared_ptr<btOpenraveDispatcher> dispatcher, btOverlappingPairCache* paircallback, btOverlapFilterCallback* filter) : _dispatcher(dispatcher), _paircallback(paircallback) {
+    public:
+        SetFilterScope(boost::shared_ptr<btOpenraveDispatcher> dispatcher, btOverlappingPairCache *paircallback, btOverlapFilterCallback *filter) : _dispatcher(dispatcher), _paircallback(paircallback)
+        {
             _paircallback->setOverlapFilterCallback(filter);
             _dispatcher->_poverlapfilt = filter;
         }
@@ -237,54 +267,62 @@ public:
             _dispatcher->_poverlapfilt = NULL;
         }
 
-private:
+    private:
         boost::shared_ptr<btOpenraveDispatcher> _dispatcher;
-        btOverlappingPairCache* _paircallback;
+        btOverlappingPairCache *_paircallback;
     };
 
-    class AllRayResultCallback : public btCollisionWorld::RayResultCallback    //btCollisionWorld::ClosestRayResultCallback
+    class AllRayResultCallback : public btCollisionWorld::RayResultCallback // btCollisionWorld::ClosestRayResultCallback
     {
-public:
-        AllRayResultCallback(const btVector3&   rayFromWorld,const btVector3&   rayToWorld, KinBodyConstPtr pbodyonly) : RayResultCallback(), m_rayFromWorld(rayFromWorld), m_rayToWorld(rayToWorld), _pbodyonly(pbodyonly) {
+    public:
+        AllRayResultCallback(const btVector3 &rayFromWorld, const btVector3 &rayToWorld, KinBodyConstPtr pbodyonly) : RayResultCallback(), m_rayFromWorld(rayFromWorld), m_rayToWorld(rayToWorld), _pbodyonly(pbodyonly)
+        {
         }
         //: btCollisionWorld::ClosestRayResultCallback(rayFromWorld, rayToWorld), _pbodyonly(pbodyonly) {}
 
-        virtual bool needsCollision (btBroadphaseProxy *proxy0) const {
+        virtual bool needsCollision(btBroadphaseProxy *proxy0) const
+        {
             KinBody::LinkPtr plink = GetLinkFromProxy(proxy0);
-            if( !!_pbodyonly &&( _pbodyonly != plink->GetParent()) ) {
+            if (!!_pbodyonly && (_pbodyonly != plink->GetParent()))
+            {
                 return false;
             }
-            //RAVELOG_INFO("clink: %s: %d\n",plink->GetParent()->GetName().c_str(),plink->IsEnabled());
+            // RAVELOG_INFO("clink: %s: %d\n",plink->GetParent()->GetName().c_str(),plink->IsEnabled());
             return plink->IsEnabled();
         }
 
-        btVector3 m_rayFromWorld;                  //used to calculate hitPointWorld from hitFraction
+        btVector3 m_rayFromWorld; // used to calculate hitPointWorld from hitFraction
         btVector3 m_rayToWorld;
 
         btVector3 m_hitNormalWorld;
         btVector3 m_hitPointWorld;
 
-        virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult,bool normalInWorldSpace) {
-            //caller already does the filter on the m_closestHitFraction
-            if(rayResult.m_hitFraction <= m_closestHitFraction) {
-                KinBody::LinkPtr plink = GetLinkFromCollision(const_cast<btCollisionObject*>(rayResult.m_collisionObject));
-                if( !plink->IsEnabled() || (!!_pbodyonly &&( _pbodyonly != plink->GetParent()) ) ) {
+        virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult &rayResult, bool normalInWorldSpace)
+        {
+            // caller already does the filter on the m_closestHitFraction
+            if (rayResult.m_hitFraction <= m_closestHitFraction)
+            {
+                KinBody::LinkPtr plink = GetLinkFromCollision(const_cast<btCollisionObject *>(rayResult.m_collisionObject));
+                if (!plink->IsEnabled() || (!!_pbodyonly && (_pbodyonly != plink->GetParent())))
+                {
                     return m_closestHitFraction;
                 }
-                //RAVELOG_INFO("clink: %s=%s: %d\n",plink->GetParent()->GetName().c_str(),_pbodyonly->GetName().c_str(),plink->IsEnabled());
+                // RAVELOG_INFO("clink: %s=%s: %d\n",plink->GetParent()->GetName().c_str(),_pbodyonly->GetName().c_str(),plink->IsEnabled());
 
                 m_closestHitFraction = rayResult.m_hitFraction;
                 m_collisionObject = rayResult.m_collisionObject;
 
-                //RAVELOG_INFO("ray link: %s:%s\n",plink->GetParent()->GetName().c_str(),plink->GetName().c_str());
-                if (normalInWorldSpace) {
+                // RAVELOG_INFO("ray link: %s:%s\n",plink->GetParent()->GetName().c_str(),plink->GetName().c_str());
+                if (normalInWorldSpace)
+                {
                     m_hitNormalWorld = rayResult.m_hitNormalLocal;
                 }
-                else {
-                    ///need to transform normal into worldspace
-                    m_hitNormalWorld = m_collisionObject->getWorldTransform().getBasis()*rayResult.m_hitNormalLocal;
+                else
+                {
+                    /// need to transform normal into worldspace
+                    m_hitNormalWorld = m_collisionObject->getWorldTransform().getBasis() * rayResult.m_hitNormalLocal;
                 }
-                m_hitPointWorld.setInterpolate3(m_rayFromWorld,m_rayToWorld,rayResult.m_hitFraction);
+                m_hitPointWorld.setInterpolate3(m_rayFromWorld, m_rayToWorld, rayResult.m_hitFraction);
             }
             return m_closestHitFraction;
         }
@@ -292,13 +330,15 @@ public:
         KinBodyConstPtr _pbodyonly;
     };
 
-    static BulletSpace::KinBodyInfoPtr GetCollisionInfo(KinBodyConstPtr pbody) {
+    static BulletSpace::KinBodyInfoPtr GetCollisionInfo(KinBodyConstPtr pbody)
+    {
         return boost::dynamic_pointer_cast<BulletSpace::KinBodyInfo>(pbody->GetUserData("bulletcollision"));
     }
 
-    bool CheckCollisionP(btOverlapFilterCallback* poverlapfilt, CollisionReportPtr report)
+    bool CheckCollisionP(btOverlapFilterCallback *poverlapfilt, CollisionReportPtr report)
     {
-        if( !!report ) {
+        if (!!report)
+        {
             report->Reset(_options);
         }
         const bool bUseCallbacks = !(_options & OpenRAVE::CO_IgnoreCallbacks) && GetEnv()->HasRegisteredCollisionCallbacks();
@@ -312,70 +352,93 @@ public:
 
         int numManifolds = _world->getDispatcher()->getNumManifolds();
 
-        for (int i=0; i<numManifolds; i++) {
-            btPersistentManifold* contactManifold = _world->getDispatcher()->getManifoldByIndexInternal(i);
+        for (int i = 0; i < numManifolds; i++)
+        {
+            btPersistentManifold *contactManifold = _world->getDispatcher()->getManifoldByIndexInternal(i);
             int numContacts = contactManifold->getNumContacts();
 
-            const btCollisionObject* obA = static_cast<const btCollisionObject*>(contactManifold->getBody0());
-            const btCollisionObject* obB = static_cast<const btCollisionObject*>(contactManifold->getBody1());
+            const btCollisionObject *obA = static_cast<const btCollisionObject *>(contactManifold->getBody0());
+            const btCollisionObject *obB = static_cast<const btCollisionObject *>(contactManifold->getBody1());
 
             KinBody::LinkPtr plink0 = GetLinkFromCollision(obA);
             KinBody::LinkPtr plink1 = GetLinkFromCollision(obB);
 
-            if( numContacts == 0 ) {
+            if (numContacts == 0)
+            {
                 continue;
             }
 
-            if( bUseCallbacks && !report ) {
+            if (bUseCallbacks && !report)
+            {
                 report.reset(new CollisionReport());
                 report->Reset(_options);
             }
 
-            if( !!report ) {
-                //report->numCols = numContacts;
+            if (!!report)
+            {
+                // report->numCols = numContacts;
                 report->minDistance = 0;
-                report->plink1 = plink0;
-                report->plink2 = plink1;
+                // report->plink1 = plink0;
+                // report->plink2 = plink1;
 
-                if( _options & OpenRAVE::CO_Contacts ) {
-                    report->contacts.reserve(numContacts);
-                    for (int j=0; j<numContacts; j++) {
-                        btManifoldPoint& pt = contactManifold->getContactPoint(j);
+                int icollision = -1;
+                if (!!plink0 && !!plink1)
+                    icollision = report->AddLinkCollision(*plink0, *plink1);
+                else if (!!plink0)
+                    icollision = report->AddLinkCollision(*plink0);
+                else if (!!plink1)
+                    icollision = report->AddLinkCollision(*plink1);
+
+                if (icollision >= 0 && (_options & OpenRAVE::CO_Contacts))
+                {
+                    OpenRAVE::CollisionPairInfo &cpinfo = report->vCollisionInfos[icollision];
+                    cpinfo.contacts.resize(numContacts);
+                    for (int j = 0; j < numContacts; j++)
+                    {
+                        btManifoldPoint &pt = contactManifold->getContactPoint(j);
                         btVector3 btp = pt.getPositionWorldOnB();
                         btVector3 btn = pt.m_normalWorldOnB;
-                        Vector p(btp[0],btp[1],btp[2]), n(btn[0],btn[1],btn[2]);
+                        Vector p(btp[0], btp[1], btp[2]), n(btn[0], btn[1], btn[2]);
                         dReal distance = pt.m_distance1;
-                        if( !!plink1 && plink1->ValidateContactNormal(p,n) ) {
+                        if (!!plink1 && plink1->ValidateContactNormal(p, n))
+                        {
                             distance = -distance;
                         }
-                        report->contacts.push_back(CONTACT(p, n, distance));
+                        cpinfo.contacts.push_back(OpenRAVE::CONTACT(p, n, distance));
+                        // report->contacts.push_back(CONTACT(p, n, distance));
                     }
                 }
             }
 
             contactManifold->clearManifold();
 
-            if( bUseCallbacks ) {
-                if( listcallbacks.size() == 0 ) {
+            if (bUseCallbacks)
+            {
+                if (listcallbacks.size() == 0)
+                {
                     GetEnv()->GetRegisteredCollisionCallbacks(listcallbacks);
                 }
                 bool bDefaultAction = true;
-                FOREACHC(itfn, listcallbacks) {
-                    OpenRAVE::CollisionAction action = (*itfn)(report,false);
-                    if( action != OpenRAVE::CA_DefaultAction ) {
+                FOREACHC(itfn, listcallbacks)
+                {
+                    OpenRAVE::CollisionAction action = (*itfn)(report, false);
+                    if (action != OpenRAVE::CA_DefaultAction)
+                    {
                         report->Reset();
                         bDefaultAction = false;
                         break;
                     }
                 }
 
-                if( !bDefaultAction ) {
+                if (!bDefaultAction)
+                {
                     continue;
                 }
             }
 
             // collision, so clear the rest and return
-            for (int j=i+1; j<numManifolds; j++) {
+            for (int j = i + 1; j < numManifolds; j++)
+            {
                 _world->getDispatcher()->getManifoldByIndexInternal(j)->clearManifold();
             }
             return true;
@@ -385,23 +448,25 @@ public:
     }
 
 public:
-    BulletCollisionChecker(EnvironmentBasePtr penv, std::istream& sinput) : CollisionCheckerBase(penv), bulletspace(new BulletSpace(penv, GetCollisionInfo, false)), _options(0) {
+    BulletCollisionChecker(EnvironmentBasePtr penv, std::istream &sinput) : CollisionCheckerBase(penv), bulletspace(new BulletSpace(penv, GetCollisionInfo, false)), _options(0)
+    {
         __description = ":Interface Author: Rosen Diankov\n\nCollision checker from the `Bullet Physics Package <http://bulletphysics.org>`";
         _userdatakey = std::string("bulletcollision");
     }
-    virtual ~BulletCollisionChecker() {
+    virtual ~BulletCollisionChecker()
+    {
         DestroyEnvironment();
     }
 
     virtual bool InitEnvironment()
     {
         // note: btAxisSweep3 is buggy
-        _broadphase.reset(new btDbvtBroadphase());     // dynamic aabbs, supposedly good for changing scenes
+        _broadphase.reset(new btDbvtBroadphase()); // dynamic aabbs, supposedly good for changing scenes
         _collisionConfiguration.reset(new btDefaultCollisionConfiguration());
         _dispatcher.reset(new btOpenraveDispatcher(this, _collisionConfiguration.get()));
-        _world.reset(new btCollisionWorld(_dispatcher.get(),_broadphase.get(),_collisionConfiguration.get()));
+        _world.reset(new btCollisionWorld(_dispatcher.get(), _broadphase.get(), _collisionConfiguration.get()));
 
-        if( !bulletspace->InitEnvironment(_world) )
+        if (!bulletspace->InitEnvironment(_world))
             return false;
 
         vector<KinBodyPtr> vbodies;
@@ -417,11 +482,12 @@ public:
         // go through all the KinBodies and destory their collision pointers
         vector<KinBodyPtr> vbodies;
         GetEnv()->GetBodies(vbodies);
-        FOREACHC(itbody, vbodies) {
+        FOREACHC(itbody, vbodies)
+        {
             (*itbody)->RemoveUserData("bulletcollision");
         }
         bulletspace->DestroyEnvironment();
-        if( !!_world && _world->getNumCollisionObjects() )
+        if (!!_world && _world->getNumCollisionObjects())
             RAVELOG_WARN("world objects still left!\n");
 
         _world.reset();
@@ -439,7 +505,8 @@ public:
 
     virtual void RemoveKinBody(KinBodyPtr pbody)
     {
-        if( !!pbody ) {
+        if (!!pbody)
+        {
             pbody->RemoveUserData("bulletcollision");
         }
     }
@@ -447,32 +514,37 @@ public:
     virtual bool SetCollisionOptions(int options)
     {
         _options = options;
-        if( options & CO_Distance ) {
-            //RAVELOG_WARN("bullet checker doesn't support CO_Distance\n");
+        if (options & CO_Distance)
+        {
+            // RAVELOG_WARN("bullet checker doesn't support CO_Distance\n");
             return false;
         }
 
-        if( options & CO_Contacts ) {
-            //setCollisionFlags btCollisionObject::CF_NO_CONTACT_RESPONSE - don't generate
+        if (options & CO_Contacts)
+        {
+            // setCollisionFlags btCollisionObject::CF_NO_CONTACT_RESPONSE - don't generate
         }
         return true;
     }
 
-    virtual int GetCollisionOptions() const {
+    virtual int GetCollisionOptions() const
+    {
         return _options;
     }
 
     virtual bool CheckCollision(KinBodyConstPtr pbody, CollisionReportPtr report)
     {
-        if(( pbody->GetLinks().size() == 0) || !pbody->IsEnabled() ) {
-            RAVELOG_WARN(str(boost::format("body %s not valid\n")%pbody->GetName()));
+        if ((pbody->GetLinks().size() == 0) || !pbody->IsEnabled())
+        {
+            RAVELOG_WARN(str(boost::format("body %s not valid\n") % pbody->GetName()));
             return false;
         }
 
         bulletspace->Synchronize();
 
-        KinBodyFilterCallback kinbodycallback(shared_collisionchecker(),pbody);
-        if( CheckCollisionP(&kinbodycallback, report) ) {
+        KinBodyFilterCallback kinbodycallback(shared_collisionchecker(), pbody);
+        if (CheckCollisionP(&kinbodycallback, report))
+        {
             return true;
         }
         return false;
@@ -480,28 +552,31 @@ public:
 
     virtual bool CheckCollision(KinBodyConstPtr pbody1, KinBodyConstPtr pbody2, CollisionReportPtr report)
     {
-        if(( pbody1->GetLinks().size() == 0) || !pbody1->IsEnabled() ) {
-            RAVELOG_WARN(str(boost::format("body1 %s not valid\n")%pbody1->GetName()));
+        if ((pbody1->GetLinks().size() == 0) || !pbody1->IsEnabled())
+        {
+            RAVELOG_WARN(str(boost::format("body1 %s not valid\n") % pbody1->GetName()));
             return false;
         }
-        if(( pbody2 == NULL) ||( pbody2->GetLinks().size() == 0) || !pbody2->IsEnabled() ) {
-            RAVELOG_WARN(str(boost::format("body2 %s not valid\n")%pbody2->GetName()));
+        if ((pbody2 == NULL) || (pbody2->GetLinks().size() == 0) || !pbody2->IsEnabled())
+        {
+            RAVELOG_WARN(str(boost::format("body2 %s not valid\n") % pbody2->GetName()));
             return false;
         }
 
-        if( pbody1->IsAttached(pbody2) )
+        if (pbody1->IsAttached(pbody2))
             return false;
 
         bulletspace->Synchronize();
 
-        KinBodyFilterCallback kinbodycallback(shared_collisionchecker(),pbody1,pbody2);
+        KinBodyFilterCallback kinbodycallback(shared_collisionchecker(), pbody1, pbody2);
         return CheckCollisionP(&kinbodycallback, report);
     }
 
     virtual bool CheckCollision(KinBody::LinkConstPtr plink, CollisionReportPtr report)
     {
-        if( !plink->IsEnabled() ) {
-            RAVELOG_VERBOSE(str(boost::format("calling collision on disabled link %s\n")%plink->GetName()));
+        if (!plink->IsEnabled())
+        {
+            RAVELOG_VERBOSE(str(boost::format("calling collision on disabled link %s\n") % plink->GetName()));
             return false;
         }
 
@@ -514,12 +589,14 @@ public:
 
     virtual bool CheckCollision(KinBody::LinkConstPtr plink1, KinBody::LinkConstPtr plink2, CollisionReportPtr report)
     {
-        if( !plink1->IsEnabled() ) {
-            RAVELOG_VERBOSE(str(boost::format("calling collision on disabled link1 %s\n")%plink1->GetName()));
+        if (!plink1->IsEnabled())
+        {
+            RAVELOG_VERBOSE(str(boost::format("calling collision on disabled link1 %s\n") % plink1->GetName()));
             return false;
         }
-        if( !plink2->IsEnabled() ) {
-            RAVELOG_VERBOSE(str(boost::format("calling collision on disabled link2 %s\n")%plink2->GetName()));
+        if (!plink2->IsEnabled())
+        {
+            RAVELOG_VERBOSE(str(boost::format("calling collision on disabled link2 %s\n") % plink2->GetName()));
             return false;
         }
 
@@ -531,13 +608,15 @@ public:
 
     virtual bool CheckCollision(KinBody::LinkConstPtr plink, KinBodyConstPtr pbody, CollisionReportPtr report)
     {
-        if(( pbody->GetLinks().size() == 0) || !pbody->IsEnabled() ) {    //
-            //RAVELOG_WARN(str(boost::format("body %s not valid\n")%pbody->GetName()));
+        if ((pbody->GetLinks().size() == 0) || !pbody->IsEnabled())
+        { //
+            // RAVELOG_WARN(str(boost::format("body %s not valid\n")%pbody->GetName()));
             return false;
         }
 
-        if( !plink->IsEnabled() ) {
-            //RAVELOG_VERBOSE(str(boost::format("calling collision on disabled link %s\n")%plink->GetName()));
+        if (!plink->IsEnabled())
+        {
+            // RAVELOG_VERBOSE(str(boost::format("calling collision on disabled link %s\n")%plink->GetName()));
             return false;
         }
 
@@ -549,7 +628,7 @@ public:
         return CheckCollisionP(&kinbodylinkcallback, report);
     }
 
-    virtual bool CheckCollision(KinBody::LinkConstPtr plink, const std::vector<KinBodyConstPtr>& vbodyexcluded, const std::vector<KinBody::LinkConstPtr>& vlinkexcluded, CollisionReportPtr report)
+    virtual bool CheckCollision(KinBody::LinkConstPtr plink, const std::vector<KinBodyConstPtr> &vbodyexcluded, const std::vector<KinBody::LinkConstPtr> &vlinkexcluded, CollisionReportPtr report)
     {
         RAVELOG_FATAL("This type of collision checking is not yet implemented in the Bullet collision checker.\n");
         BOOST_ASSERT(0);
@@ -557,75 +636,85 @@ public:
         return false;
     }
 
-    virtual bool CheckCollision(KinBodyConstPtr pbody, const std::vector<KinBodyConstPtr>& vbodyexcluded, const std::vector<KinBody::LinkConstPtr>& vlinkexcluded, CollisionReportPtr report)
+    virtual bool CheckCollision(KinBodyConstPtr pbody, const std::vector<KinBodyConstPtr> &vbodyexcluded, const std::vector<KinBody::LinkConstPtr> &vlinkexcluded, CollisionReportPtr report)
     {
-        if(( vbodyexcluded.size() == 0) &&( vlinkexcluded.size() == 0) )
+        if ((vbodyexcluded.size() == 0) && (vlinkexcluded.size() == 0))
             return CheckCollision(pbody, report);
 
-        if(( pbody->GetLinks().size() == 0) || !pbody->IsEnabled() ) {
-            //RAVELOG_WARN(str(boost::format("body %s not valid\n")%pbody->GetName()));
+        if ((pbody->GetLinks().size() == 0) || !pbody->IsEnabled())
+        {
+            // RAVELOG_WARN(str(boost::format("body %s not valid\n")%pbody->GetName()));
             return false;
         }
 
         bulletspace->Synchronize();
 
-        KinBodyFilterExCallback kinbodyexcallback(shared_collisionchecker(),pbody,vbodyexcluded);
+        KinBodyFilterExCallback kinbodyexcallback(shared_collisionchecker(), pbody, vbodyexcluded);
         return CheckCollisionP(&kinbodyexcallback, report);
     }
 
-    virtual bool CheckCollision(const RAY& ray, KinBody::LinkConstPtr plink, CollisionReportPtr report)
+    virtual bool CheckCollision(const RAY &ray, KinBody::LinkConstPtr plink, CollisionReportPtr report)
     {
-        if( !plink->IsEnabled() ) {
-            //RAVELOG_VERBOSE(str(boost::format("calling collision on disabled link %s\n")%plink->GetName()));
+        if (!plink->IsEnabled())
+        {
+            // RAVELOG_VERBOSE(str(boost::format("calling collision on disabled link %s\n")%plink->GetName()));
             return false;
         }
 
-        if( !!report )
+        if (!!report)
             report->Reset();
 
         bulletspace->Synchronize();
         _world->updateAabbs();
 
-        if( fabsf(sqrtf(ray.dir.lengthsqr3())-1) < 1e-4 )
+        if (fabsf(sqrtf(ray.dir.lengthsqr3()) - 1) < 1e-4)
             RAVELOG_DEBUG("CheckCollision: ray direction length is 1.0, note that only collisions within a distance of 1.0 will be checked\n");
 
         btVector3 from = BulletSpace::GetBtVector(ray.pos);
-        btVector3 to = BulletSpace::GetBtVector(ray.pos+ray.dir);
+        btVector3 to = BulletSpace::GetBtVector(ray.pos + ray.dir);
         btTransform rayFromTrans, rayToTrans;
         rayFromTrans.setIdentity();
         rayFromTrans.setOrigin(from);
         rayToTrans.setIdentity();
         rayToTrans.setOrigin(to);
-        btCollisionWorld::ClosestRayResultCallback rayCallback(from,to);
+        btCollisionWorld::ClosestRayResultCallback rayCallback(from, to);
         BulletSpace::KinBodyInfoPtr pinfo = GetCollisionInfo(plink->GetParent());
         boost::shared_ptr<BulletSpace::KinBodyInfo::LINK> plinkinfo = pinfo->vlinks.at(plink->GetIndex());
-        _world->rayTestSingle(rayFromTrans,rayToTrans,plinkinfo->obj.get(),plinkinfo->shape.get(),plinkinfo->obj->getWorldTransform(),rayCallback);
+        _world->rayTestSingle(rayFromTrans, rayToTrans, plinkinfo->obj.get(), plinkinfo->shape.get(), plinkinfo->obj->getWorldTransform(), rayCallback);
 
         bool bCollision = rayCallback.hasHit();
-        if( bCollision ) {
+        if (bCollision)
+        {
             const bool bUseCallbacks = !(_options & OpenRAVE::CO_IgnoreCallbacks) && GetEnv()->HasRegisteredCollisionCallbacks();
-            if( bUseCallbacks && !report ) {
+            if (bUseCallbacks && !report)
+            {
                 report.reset(new CollisionReport());
                 report->Reset(_options);
             }
 
-            if( !!report ) {
-                //report->numCols = 1;
-                report->minDistance = (rayCallback.m_hitPointWorld-rayCallback.m_rayFromWorld).length();
-                report->plink1 = GetLinkFromCollision(const_cast<btCollisionObject*>(rayCallback.m_collisionObject));
+            if (!!report)
+            {
+                // report->numCols = 1;
+                report->minDistance = (rayCallback.m_hitPointWorld - rayCallback.m_rayFromWorld).length();
+                OpenRAVE::KinBody::LinkPtr plink = GetLinkFromCollision(const_cast<btCollisionObject *>(rayCallback.m_collisionObject));
+                int icollision = report->AddLinkCollision(*plink);
 
                 Vector p(rayCallback.m_hitPointWorld[0], rayCallback.m_hitPointWorld[1], rayCallback.m_hitPointWorld[2]);
                 Vector n(rayCallback.m_hitNormalWorld[0], rayCallback.m_hitNormalWorld[1], rayCallback.m_hitNormalWorld[2]);
-                report->contacts.push_back(CONTACT(p,n.normalize3(),report->minDistance));
+                report->vCollisionInfos[icollision].contacts.push_back(OpenRAVE::CONTACT(p, n, report->minDistance));
+                // report->contacts.push_back(CONTACT(p, n.normalize3(), report->minDistance));
             }
 
-            if( bUseCallbacks ) {
+            if (bUseCallbacks)
+            {
                 std::list<EnvironmentBase::CollisionCallbackFn> listcallbacks;
                 GetEnv()->GetRegisteredCollisionCallbacks(listcallbacks);
 
-                FOREACHC(itfn, listcallbacks) {
-                    OpenRAVE::CollisionAction action = (*itfn)(report,false);
-                    if( action != OpenRAVE::CA_DefaultAction ) {
+                FOREACHC(itfn, listcallbacks)
+                {
+                    OpenRAVE::CollisionAction action = (*itfn)(report, false);
+                    if (action != OpenRAVE::CA_DefaultAction)
+                    {
                         report->Reset();
                         return false;
                     }
@@ -635,67 +724,79 @@ public:
 
         return bCollision;
     }
-    virtual bool CheckCollision(const RAY& ray, KinBodyConstPtr pbody, CollisionReportPtr report)
+    virtual bool CheckCollision(const RAY &ray, KinBodyConstPtr pbody, CollisionReportPtr report)
     {
-        if(( pbody->GetLinks().size() == 0) || !pbody->IsEnabled() ) {
-            //RAVELOG_WARN(str(boost::format("body %s not valid\n")%pbody->GetName()));
+        if ((pbody->GetLinks().size() == 0) || !pbody->IsEnabled())
+        {
+            // RAVELOG_WARN(str(boost::format("body %s not valid\n")%pbody->GetName()));
             return false;
         }
 
-        CollisionFilterCallback filtercallback(shared_collisionchecker(),pbody);
-        if( !!report ) {
+        CollisionFilterCallback filtercallback(shared_collisionchecker(), pbody);
+        if (!!report)
+        {
             report->Reset();
         }
 
         bulletspace->Synchronize();
         _world->updateAabbs();
 
-        if( fabsf(sqrtf(ray.dir.lengthsqr3())-1) < 1e-4 )
+        if (fabsf(sqrtf(ray.dir.lengthsqr3()) - 1) < 1e-4)
             RAVELOG_DEBUG("CheckCollision: ray direction length is 1.0, note that only collisions within a distance of 1.0 will be checked\n");
 
         btVector3 from = BulletSpace::GetBtVector(ray.pos);
-        btVector3 to = BulletSpace::GetBtVector(ray.pos+ray.dir);
+        btVector3 to = BulletSpace::GetBtVector(ray.pos + ray.dir);
         btTransform rayFromTrans, rayToTrans;
         rayFromTrans.setIdentity();
         rayFromTrans.setOrigin(from);
         rayToTrans.setIdentity();
         rayToTrans.setOrigin(to);
 
-        AllRayResultCallback rayCallback(from,to,pbody);
+        AllRayResultCallback rayCallback(from, to, pbody);
         BulletSpace::KinBodyInfoPtr pinfo = GetCollisionInfo(pbody);
-        BOOST_ASSERT(pinfo->pbody == pbody );
-        FOREACH(itlink,pinfo->vlinks) {
-            if( (*itlink)->plink->IsEnabled() && filtercallback.IsActiveLink(pbody,(*itlink)->plink->GetIndex()) ) {
-                _world->rayTestSingle(rayFromTrans,rayToTrans,(*itlink)->obj.get(),(*itlink)->shape.get(),(*itlink)->obj->getWorldTransform(),rayCallback);
+        BOOST_ASSERT(pinfo->pbody == pbody);
+        FOREACH(itlink, pinfo->vlinks)
+        {
+            if ((*itlink)->plink->IsEnabled() && filtercallback.IsActiveLink(pbody, (*itlink)->plink->GetIndex()))
+            {
+                _world->rayTestSingle(rayFromTrans, rayToTrans, (*itlink)->obj.get(), (*itlink)->shape.get(), (*itlink)->obj->getWorldTransform(), rayCallback);
             }
         }
         //_world->rayTest(from,to, rayCallback);
 
         bool bCollision = rayCallback.hasHit();
-        if( bCollision ) {
+        if (bCollision)
+        {
             const bool bUseCallbacks = !(_options & OpenRAVE::CO_IgnoreCallbacks) && GetEnv()->HasRegisteredCollisionCallbacks();
-            if( bUseCallbacks && !report ) {
+            if (bUseCallbacks && !report)
+            {
                 report.reset(new CollisionReport());
                 report->Reset(_options);
             }
 
-            if( !!report ) {
-                //report->numCols = 1;
-                report->minDistance = (rayCallback.m_hitPointWorld-rayCallback.m_rayFromWorld).length();
-                report->plink1 = GetLinkFromCollision(const_cast<btCollisionObject*>(rayCallback.m_collisionObject));
+            if (!!report)
+            {
+                // report->numCols = 1;
+                report->minDistance = (rayCallback.m_hitPointWorld - rayCallback.m_rayFromWorld).length();
+                OpenRAVE::KinBody::LinkPtr plink = GetLinkFromCollision(const_cast<btCollisionObject *>(rayCallback.m_collisionObject));
+                int icollision = report->AddLinkCollision(*plink);
 
                 Vector p(rayCallback.m_hitPointWorld[0], rayCallback.m_hitPointWorld[1], rayCallback.m_hitPointWorld[2]);
                 Vector n(rayCallback.m_hitNormalWorld[0], rayCallback.m_hitNormalWorld[1], rayCallback.m_hitNormalWorld[2]);
-                report->contacts.push_back(CONTACT(p,n.normalize3(),report->minDistance));
+                // report->contacts.push_back(CONTACT(p, n.normalize3(), report->minDistance));
+                report->vCollisionInfos[icollision].contacts.push_back(OpenRAVE::CONTACT(p, n.normalize3(), report->minDistance));
             }
 
-            if( bUseCallbacks ) {
+            if (bUseCallbacks)
+            {
                 std::list<EnvironmentBase::CollisionCallbackFn> listcallbacks;
                 GetEnv()->GetRegisteredCollisionCallbacks(listcallbacks);
 
-                FOREACHC(itfn, listcallbacks) {
-                    OpenRAVE::CollisionAction action = (*itfn)(report,false);
-                    if( action != OpenRAVE::CA_DefaultAction ) {
+                FOREACHC(itfn, listcallbacks)
+                {
+                    OpenRAVE::CollisionAction action = (*itfn)(report, false);
+                    if (action != OpenRAVE::CA_DefaultAction)
+                    {
                         report->Reset();
                         return false;
                     }
@@ -706,61 +807,74 @@ public:
         return bCollision;
     }
 
-    virtual bool CheckCollision(const RAY& ray, CollisionReportPtr report)
+    virtual bool CheckCollision(const RAY &ray, CollisionReportPtr report)
     {
-        if( !!report ) {
+        if (!!report)
+        {
             report->Reset();
         }
         bulletspace->Synchronize();
         _world->updateAabbs();
 
-        if( fabsf(sqrtf(ray.dir.lengthsqr3())-1) < 1e-4 ) {
+        if (fabsf(sqrtf(ray.dir.lengthsqr3()) - 1) < 1e-4)
+        {
             RAVELOG_DEBUG("CheckCollision: ray direction length is 1.0, note that only collisions within a distance of 1.0 will be checked\n");
         }
         // unfortunately, the bullet ray checker cannot handle disabled bodies properly, so have to move all of them away
-        list<boost::shared_ptr<KinBody::KinBodyStateSaver> > listsavers;
+        list<boost::shared_ptr<KinBody::KinBodyStateSaver>> listsavers;
         vector<KinBodyPtr> vbodies;
         GetEnv()->GetBodies(vbodies);
-        Vector vnormdir = ray.dir*(1/RaveSqrt(ray.dir.lengthsqr3()));
-        FOREACH(it,vbodies) {
-            if( !(*it)->IsEnabled() ) {
+        Vector vnormdir = ray.dir * (1 / RaveSqrt(ray.dir.lengthsqr3()));
+        FOREACH(it, vbodies)
+        {
+            if (!(*it)->IsEnabled())
+            {
                 listsavers.push_back(boost::shared_ptr<KinBody::KinBodyStateSaver>(new KinBody::KinBodyStateSaver(*it)));
                 AABB ab = (*it)->ComputeAABB();
-                Transform t; t.trans = ray.pos-vnormdir*4*RaveSqrt(ab.extents.lengthsqr3());
+                Transform t;
+                t.trans = ray.pos - vnormdir * 4 * RaveSqrt(ab.extents.lengthsqr3());
                 (*it)->SetTransform(t);
             }
         }
 
         btVector3 from = BulletSpace::GetBtVector(ray.pos);
-        btVector3 to = BulletSpace::GetBtVector(ray.pos+ray.dir);
-        AllRayResultCallback rayCallback(from,to,KinBodyConstPtr());
-        _world->rayTest(from,to, rayCallback);
+        btVector3 to = BulletSpace::GetBtVector(ray.pos + ray.dir);
+        AllRayResultCallback rayCallback(from, to, KinBodyConstPtr());
+        _world->rayTest(from, to, rayCallback);
 
         bool bCollision = rayCallback.hasHit();
-        if( bCollision ) {
+        if (bCollision)
+        {
             const bool bUseCallbacks = !(_options & OpenRAVE::CO_IgnoreCallbacks) && GetEnv()->HasRegisteredCollisionCallbacks();
-            if( bUseCallbacks && !report ) {
+            if (bUseCallbacks && !report)
+            {
                 report.reset(new CollisionReport());
                 report->Reset(_options);
             }
 
-            if( !!report ) {
-                //report->numCols = 1;
-                report->minDistance = (rayCallback.m_hitPointWorld-rayCallback.m_rayFromWorld).length();
-                report->plink1 = GetLinkFromCollision(const_cast<btCollisionObject*>(rayCallback.m_collisionObject));
+            if (!!report)
+            {
+                // report->numCols = 1;
+                report->minDistance = (rayCallback.m_hitPointWorld - rayCallback.m_rayFromWorld).length();
+                OpenRAVE::KinBody::LinkPtr plink = GetLinkFromCollision(const_cast<btCollisionObject *>(rayCallback.m_collisionObject));
+                int icollision = report->AddLinkCollision(*plink);
 
                 Vector p(rayCallback.m_hitPointWorld[0], rayCallback.m_hitPointWorld[1], rayCallback.m_hitPointWorld[2]);
                 Vector n(rayCallback.m_hitNormalWorld[0], rayCallback.m_hitNormalWorld[1], rayCallback.m_hitNormalWorld[2]);
-                report->contacts.push_back(CONTACT(p,n.normalize3(),report->minDistance));
+                // report->contacts.push_back(CONTACT(p, n.normalize3(), report->minDistance));
+                report->vCollisionInfos[icollision].contacts.push_back(OpenRAVE::CONTACT(p, n.normalize3(), report->minDistance));
             }
 
-            if( bUseCallbacks ) {
+            if (bUseCallbacks)
+            {
                 std::list<EnvironmentBase::CollisionCallbackFn> listcallbacks;
                 GetEnv()->GetRegisteredCollisionCallbacks(listcallbacks);
 
-                FOREACHC(itfn, listcallbacks) {
-                    OpenRAVE::CollisionAction action = (*itfn)(report,false);
-                    if( action != OpenRAVE::CA_DefaultAction ) {
+                FOREACHC(itfn, listcallbacks)
+                {
+                    OpenRAVE::CollisionAction action = (*itfn)(report, false);
+                    if (action != OpenRAVE::CA_DefaultAction)
+                    {
                         report->Reset();
                         return false;
                     }
@@ -773,14 +887,15 @@ public:
 
     virtual bool CheckStandaloneSelfCollision(KinBodyConstPtr pbody, CollisionReportPtr report)
     {
-        if(( pbody->GetLinks().size() == 0) || !pbody->IsEnabled() ) {
-            //RAVELOG_WARN(str(boost::format("body %s not valid\n")%pbody->GetName()));
+        if ((pbody->GetLinks().size() == 0) || !pbody->IsEnabled())
+        {
+            // RAVELOG_WARN(str(boost::format("body %s not valid\n")%pbody->GetName()));
             return false;
         }
 
-
         int adjacentoptions = KinBody::AO_Enabled;
-        if( (_options&OpenRAVE::CO_ActiveDOFs) && pbody->IsRobot() ) {
+        if ((_options & OpenRAVE::CO_ActiveDOFs) && pbody->IsRobot())
+        {
             adjacentoptions |= KinBody::AO_ActiveDOFs;
         }
         LinkAdjacentFilterCallback linkadjacent(pbody, pbody->GetNonAdjacentLinks(adjacentoptions));
@@ -795,7 +910,8 @@ public:
         return CheckStandaloneSelfCollision(plink->GetParent(), report);
     }
 
-    virtual void SetTolerance(dReal tolerance) {
+    virtual void SetTolerance(dReal tolerance)
+    {
         RAVELOG_WARN("not implemented\n");
     }
 
@@ -812,7 +928,7 @@ private:
     LinkFilterCallback _linkcallback;
 };
 
-CollisionCheckerBasePtr CreateBulletCollisionChecker(EnvironmentBasePtr penv, std::istream& sinput)
+CollisionCheckerBasePtr CreateBulletCollisionChecker(EnvironmentBasePtr penv, std::istream &sinput)
 {
-    return CollisionCheckerBasePtr(new BulletCollisionChecker(penv,sinput));
+    return CollisionCheckerBasePtr(new BulletCollisionChecker(penv, sinput));
 }
