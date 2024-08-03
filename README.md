@@ -34,6 +34,14 @@ export PYTHONPATH=$PYTHONPATH:`openrave-config --python-dir`
 
 Optionally, add this line to `~/.bashrc`.
 
+## Examples
+
+Most Python examples are out of date and will not run. This one will at least run for a while until it fails. Note that it ignores collisions for some reason.
+
+```bash
+openrave.py --example simplemanipulation
+```
+
 
 <!-- Welcome to OpenRAVE
 -------------------
