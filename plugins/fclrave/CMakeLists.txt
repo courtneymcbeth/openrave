@@ -53,12 +53,12 @@ if( FCL_FOUND )
 
 
     check_cxx_source_compiles("
-      #include <fcl/broadphase/broadphase.h>
+      #include <fcl/broadphase/broadphase_collision_manager.h>
 
       int main() {
-        fcl::DynamicAABBTreeCollisionManager manager;
-        std::vector<fcl::CollisionObject*> v;
-        manager.update(v, false);
+        fcl::DynamicAABBTreeCollisionManager<double> manager;
+        std::vector<fcl::CollisionObject<double>*> v;
+        manager.update(v);
         return 0;
       }"
       FCL_SUPPORT_BULK_UPDATE)
