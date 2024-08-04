@@ -13,7 +13,7 @@ sudo add-apt-repository ppa:ubuntuhandbook1/ppa
 Ignore any libraries that are not found.
 
 ```bash
-sudo apt-get install g++ libqt4-dev qt4-dev-tools ffmpeg libavcodec-dev libavformat-dev libxvidcore-dev libx264-dev libfaac-dev libogg-dev libvorbis-dev libdc1394-dev liblame-dev libgsm1-dev libboost-dev libboost-regex-dev libxml2-dev libglew-dev  libboost-graph-dev libboost-wave-dev libboost-serialization-dev libboost-filesystem-dev libpcre3-dev libboost-thread-dev libmpfr-dev libboost-date-time-dev libqhull-dev libswscale-dev lapack3-dev
+sudo apt-get install g++ libqt4-dev qt4-dev-tools ffmpeg libavcodec-dev libavformat-dev libxvidcore-dev libx264-dev libfaac-dev libogg-dev libvorbis-dev libdc1394-dev liblame-dev libgsm1-dev libboost-dev libboost-regex-dev libxml2-dev libglew-dev  libboost-graph-dev libboost-wave-dev libboost-serialization-dev libboost-filesystem-dev libpcre3-dev libboost-thread-dev libmpfr-dev libboost-date-time-dev libqhull-dev libswscale-dev lapack3-dev libfcl-dev
 ```
 
 ## Install OpenRAVE
