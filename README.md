@@ -1,19 +1,13 @@
-# OpenRAVE for Ubuntu 22
+# OpenRAVE for Ubuntu 22+
 
 ## Install Dependencies
-
-### Qt4 PPA
-
-```bash
-sudo add-apt-repository ppa:ubuntuhandbook1/ppa
-```
 
 ### Libraries
 
 Ignore any libraries that are not found.
 
 ```bash
-sudo apt-get install g++ libqt4-dev qt4-dev-tools ffmpeg libavcodec-dev libavformat-dev libxvidcore-dev libx264-dev libfaac-dev libogg-dev libvorbis-dev libdc1394-dev libgsm1-dev libboost-dev libboost-regex-dev libxml2-dev libglew-dev  libboost-graph-dev libboost-wave-dev libboost-serialization-dev libboost-filesystem-dev libpcre3-dev libboost-thread-dev libmpfr-dev libboost-date-time-dev libqhull-dev libswscale-dev libfcl-dev libbullet-dev
+sudo apt-get install g++ qt6-base-dev ffmpeg libavcodec-dev libavformat-dev libxvidcore-dev libx264-dev libfaac-dev libogg-dev libvorbis-dev libdc1394-dev libgsm1-dev libboost-dev libboost-regex-dev libxml2-dev libglew-dev  libboost-graph-dev libboost-wave-dev libboost-serialization-dev libboost-filesystem-dev libpcre3-dev libboost-thread-dev libmpfr-dev libboost-date-time-dev libqhull-dev libswscale-dev libfcl-dev libbullet-dev libboost-iostreams-dev rapidjson-dev libgpgmepp-dev python3-pyqt6 liblapack-dev python3-opengl libopenscenegraph-dev mesa-common-dev
 ```
 
 ## Install OpenRAVE

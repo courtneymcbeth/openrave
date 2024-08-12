@@ -90,8 +90,8 @@ endif()
 #  target_link_libraries(opencvsaving ${OpenRAVE_LIBRARIES} ${OpenRAVE_CORE_LIBRARIES} ${OpenCV_LIBS})
 #endif()
 
-# include qt4 examples
-find_package(Qt4 COMPONENTS QtCore QtGui)
+# include qt6 examples
+find_package(Qt6 COMPONENTS QtCore QtGui)
 if (QT_FOUND)
   include_directories(${QT_INCLUDES})
   build_openrave_executable(orqtcoinviewercustom)

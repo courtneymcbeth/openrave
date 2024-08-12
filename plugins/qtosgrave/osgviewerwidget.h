@@ -19,11 +19,11 @@
 #include "osgpick.h"
 #include "osgskybox.h"
 
-#include <QTime>
+#include <QElapsedTimer>
 #include <QtCore/QTimer>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QLayout>
-#include <QtWidgets/QOpenGLWidget>
+#include <QOpenGLWidget>
 
 #include <osg/AnimationPath>
 #include <osgManipulator/Dragger>

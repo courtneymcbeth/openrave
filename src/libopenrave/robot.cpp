@@ -49,7 +49,7 @@ void RobotBase::GripperInfo::SerializeJSON(rapidjson::Value &value, rapidjson::D
 {
     value.SetObject();
     if( _docGripperInfo.IsObject() ) {
-        value.CopyFrom(_docGripperInfo, allocator, true); // need to copy the const strings
+        value.CopyFrom(_docGripperInfo, allocator); // need to copy the const strings
     }
     orjson::SetJsonValueByKey(value, "name", name, allocator);
     orjson::SetJsonValueByKey(value, "id", _id, allocator);
@@ -113,7 +113,7 @@ void RobotBase::GripperInfo::DeserializeJSON(const rapidjson::Value& value, dRea
     docGripperInfo.SetObject();
     if (_docGripperInfo.IsObject()) {
         // value may used for partial update, so retain original key values
-        docGripperInfo.CopyFrom(_docGripperInfo, docGripperInfo.GetAllocator(), true); // need to copy the const strings
+        docGripperInfo.CopyFrom(_docGripperInfo, docGripperInfo.GetAllocator()); // need to copy the const strings
     }
     for (rapidjson::Value::ConstMemberIterator it = value.MemberBegin(); it != value.MemberEnd(); ++it) {
         const std::string& memberName = it->name.GetString();
@@ -179,7 +179,7 @@ void RobotBase::AttachedSensorInfo::SerializeJSON(rapidjson::Value &value, rapid
 
     if (_docSensorGeometry.IsObject() && _docSensorGeometry.MemberCount() > 0) {
         rapidjson::Value sensorGeometry;
-        sensorGeometry.CopyFrom(_docSensorGeometry, allocator, true);
+        sensorGeometry.CopyFrom(_docSensorGeometry, allocator);
         value.AddMember("sensorGeometry", sensorGeometry, allocator);
     }
 }

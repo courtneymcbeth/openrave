@@ -45,7 +45,7 @@ from . import movehandstraight
 from . import pr2turnlever
 
 try:
-    from PyQt4 import QtGui, QtCore
+    from PyQt6 import QtGui, QtCore
     from . import qtexampleselector
     from . import qtserverprocess
 except ImportError:

@@ -10,12 +10,12 @@ if(NOT OPENGL_FOUND)
   message(WARNING "OpenGL not found. This library is not necessary, but it is good to link with")
 endif()
 
-find_package(Qt5 COMPONENTS Core Gui) # Declarative)
-if (NOT Qt5Gui_FOUND)
-  message(WARNING "Qt5 not found, is your QTDIR enviornment variable set?")
+find_package(Qt6 COMPONENTS Core Gui) # Declarative)
+if (NOT Qt6Gui_FOUND)
+  message(WARNING "Qt6 not found, is your QTDIR enviornment variable set?")
 endif()
 
-if (Qt5Core_FOUND AND Qt5Gui_FOUND AND SoQt_FOUND AND Coin_FOUND)
+if (Qt6Core_FOUND AND Qt6Gui_FOUND AND SoQt_FOUND AND Coin_FOUND)
   message(STATUS "Detected SoQt/Coin3D GUI, making plugin")
   include_directories(${OPENGL_INCLUDE_DIR} ${SOQT_INCLUDE_DIRS} ${COIN_INCLUDE_DIRS})
   link_directories(${OPENRAVE_LINK_DIRS} ${SOQT_LINK_DIRS} ${COIN_LINK_DIRS})
@@ -23,7 +23,7 @@ if (Qt5Core_FOUND AND Qt5Gui_FOUND AND SoQt_FOUND AND Coin_FOUND)
   # generate rules for building source files from the resources
   set(QTCOIN_MOCS qtcoinviewer.h)
   #include(${QT_USE_FILE})
-  qt5_wrap_cpp(MOC_OUTPUT_FILES ${QTCOIN_MOCS})
+  qt6_wrap_cpp(MOC_OUTPUT_FILES ${QTCOIN_MOCS})
 
   check_include_file(X11/Xlib.h HAVE_X11_XLIB_H)
 

@@ -14,7 +14,7 @@ endif()
 #include(${CMAKE_SOURCE_DIR}/modules-cmake/FindOSG.cmake)
 find_package(OpenSceneGraph 3.4 COMPONENTS osgDB osgGA osgFX osgText osgViewer osgManipulator)
 
-if (Qt5Gui_FOUND AND Qt5Core_FOUND AND Qt5Widgets_FOUND AND Qt5OpenGL_FOUND AND OPENGL_FOUND AND OPENSCENEGRAPH_FOUND)
+if (Qt6Gui_FOUND AND Qt6Core_FOUND AND Qt6Widgets_FOUND AND Qt6OpenGL_FOUND AND OPENGL_FOUND AND Qt6OpenGLWidgets_FOUND AND OPENSCENEGRAPH_FOUND)
   message(STATUS "Detected Qt/OSG GUI, making plugin")
   set(CMAKE_INCLUDE_CURRENT_DIR ON)
   include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
@@ -27,8 +27,8 @@ if (Qt5Gui_FOUND AND Qt5Core_FOUND AND Qt5Widgets_FOUND AND Qt5OpenGL_FOUND AND 
   set(QTOSG_RCCS qtosgviewer.qrc)
 
   # generate rules for building source files from the resources
-  qt5_add_resources(QTOSG_RCC_SRCS ${QTOSG_RCCS})
-  qt5_wrap_cpp(QTOSG_MOC_SRCS ${QTOSG_MOCS})
+  qt6_add_resources(QTOSG_RCC_SRCS ${QTOSG_RCCS})
+  qt6_wrap_cpp(QTOSG_MOC_SRCS ${QTOSG_MOCS})
   
   check_include_file(X11/Xlib.h HAVE_X11_XLIB_H)
 
@@ -38,7 +38,7 @@ if (Qt5Gui_FOUND AND Qt5Core_FOUND AND Qt5Widgets_FOUND AND Qt5OpenGL_FOUND AND 
     set(QTOSG_COMPILE_FLAGS "${QTOSG_COMPILE_FLAGS} -DHAVE_X11_XLIB_H")
   endif()
 
-  set (extLIBS ${LIBXML2_LIBRARIES} ${PTHREADS_LIBRARY} OpenGL::OpenGL Qt5::Core Qt5::Gui Qt5::Widgets Qt5::OpenGL)
+  set (extLIBS ${LIBXML2_LIBRARIES} ${PTHREADS_LIBRARY} OpenGL::OpenGL Qt6::Core Qt6::Gui Qt6::Widgets Qt6::OpenGL Qt6::OpenGLWidgets)
   set (extLIBS ${extLIBS} ${OPENSCENEGRAPH_LIBRARIES})
   #set (extLIBS ${extLIBS} ${OSGDB_LIBRARY_DEBUG} ${OSGQT_LIBRARY_DEBUG} ${OSGGA_LIBRARY_DEBUG} ${OSGFX_LIBRARY_DEBUG} ${OSGTEXT_LIBRARY_DEBUG} ${OSGVIEWER_LIBRARY_DEBUG} ${OSGMANIPULATOR_LIBRARY_DEBUG})
   

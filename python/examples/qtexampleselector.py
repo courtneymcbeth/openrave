@@ -42,7 +42,7 @@ import sys, os, re, logging, signal, traceback
 from multiprocessing import Process,Pipe
 from threading import Thread
 
-from PyQt4 import QtGui, QtCore
+from PyQt6 import QtGui, QtCore, QtWidgets
 
 logger = logging.getLogger('PyqtControl')
 
@@ -254,7 +254,7 @@ class Ui_MainWindow(object):
         self.pbClose.setText(QtGui.QApplication.translate("MainWindow", "Close", None, QtGui.QApplication.UnicodeUTF8))
 
 
-class MainWindow(QtGui.QMainWindow,Ui_MainWindow):
+class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
     def __init__(self,pipeOR,pipeServer):
         super(MainWindow,self).__init__(None)
         self.pipeServer = pipeServer
@@ -296,11 +296,11 @@ class MainWindow(QtGui.QMainWindow,Ui_MainWindow):
     def closeEvent(self, event):
         self.close()
 
-    @QtCore.pyqtSignature("")
+    @QtCore.pyqtSlot()
     def on_pbClose_clicked(self):
         self.close()
 
-    @QtCore.pyqtSignature("")
+    @QtCore.pyqtSlot()
     def on_pbOR_clicked(self):
         self.pbRun.setEnabled(True)
         self.ButtonsLock()
@@ -310,7 +310,7 @@ class MainWindow(QtGui.QMainWindow,Ui_MainWindow):
     def CallbackOR(self,args):
         self.ButtonsUnlock()
 
-    @QtCore.pyqtSignature("")
+    @QtCore.pyqtSlot()
     def on_pbRun_clicked(self):
         if self.orRunning:
             self.on_pbOR_clicked()

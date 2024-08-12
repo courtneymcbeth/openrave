@@ -44,7 +44,7 @@ from multiprocessing import Process,Pipe
 from threading import Thread
 from openravepy import *
 
-from PyQt4 import QtGui, QtCore
+from PyQt6 import QtGui, QtCore, QtWidgets
 
 logger = None
 
@@ -337,9 +337,9 @@ class Ui_MainWindow(object):
         self.pbClose.setText(QtGui.QApplication.translate("MainWindow", "Close", None, QtGui.QApplication.UnicodeUTF8))
 
 
-class MainWindow(QtGui.QMainWindow,Ui_MainWindow):
+class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
 
-    @QtCore.pyqtSignature("")
+    @QtCore.pyqtSlot()
     def on_pbClose_clicked(self):
         self.closeAll()
 
@@ -383,21 +383,21 @@ class MainWindow(QtGui.QMainWindow,Ui_MainWindow):
     def closeEvent(self, event):
         self.close()
 
-    @QtCore.pyqtSignature("")
+    @QtCore.pyqtSlot()
     def on_pbClose_clicked(self):
         self.close()
 
-    @QtCore.pyqtSignature("")
+    @QtCore.pyqtSlot()
     def on_pbStartOpenRAVE_clicked(self):
         self.updateTeOutput("Starting OpenRave.")
         self.SendToServer("___START_OPENRAVE_SERVER___")
 
-    @QtCore.pyqtSignature("")
+    @QtCore.pyqtSlot()
     def on_pbStartGui_clicked(self):
         self.updateTeOutput("Starting qtcoin gui.")
         self.SendToOR("StartGui")
 
-    @QtCore.pyqtSignature("")
+    @QtCore.pyqtSlot()
     def on_pbLoadEnv_clicked(self):
         self.updateTeOutput("Loading the environment.")
         self.hsTimeLine.setEnabled(False)
@@ -405,28 +405,28 @@ class MainWindow(QtGui.QMainWindow,Ui_MainWindow):
         self.pbBackward.setEnabled(False)
         self.SendToOR("LoadEnv", str(self.teEnv.toPlainText()),self.enableTrajectoryPlanning)
 
-    @QtCore.pyqtSignature("")
+    @QtCore.pyqtSlot()
     def on_pbTrajectory_clicked(self):
         self.ButtonsLock()
         self.updateTeOutput("Calculate new random trajectory.")
         self.hsTimeLineActive = False
         self.SendToOR("CalcTrajectory", callback=self.enableTrajectoryControl)
 
-    @QtCore.pyqtSignature("")
+    @QtCore.pyqtSlot()
     def on_pbForward_clicked(self):
         self.ButtonsLock()
         self.updateTeOutput("Next step of the rajectory.")
         self.hsTimeLineActive = False
         self.SendToOR("UpdateTrajectory", (self.hsTimeLine.value()+1),self.enableTrajectoryControl)
 
-    @QtCore.pyqtSignature("")
+    @QtCore.pyqtSlot()
     def on_pbBackward_clicked(self):
         self.ButtonsLock()
         self.updateTeOutput("Previous step of the trajectory.")
         self.hsTimeLineActive = False
         self.SendToOR("UpdateTrajectory", (self.hsTimeLine.value()-1),self.enableTrajectoryControl)
 
-    @QtCore.pyqtSignature("int")
+    @QtCore.pyqtSlot(int)
     def on_hsTimeLine_valueChanged(self,value):
         if self.hsTimeLineActive:
             self.SendToOR("UpdateTrajectory", value,self.enableTrajectoryControl)

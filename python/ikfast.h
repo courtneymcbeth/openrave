@@ -38,6 +38,7 @@
 #include <cmath>
 #include <iostream>
 #include <iomanip>
+#include <cstdint>
 
 #ifndef IKFAST_HEADER_COMMON
 #define IKFAST_HEADER_COMMON

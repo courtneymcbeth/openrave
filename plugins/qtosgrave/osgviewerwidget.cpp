@@ -201,7 +201,7 @@ private:
     }
 
 private:
-    QTime _time; ///< tracks the time of the last _ComputeNextTransitionAnimationMatrix call, so that can compute the time passed from that last call.
+    QElapsedTimer _time; ///< tracks the time of the last _ComputeNextTransitionAnimationMatrix call, so that can compute the time passed from that last call.
     osg::Vec3d _offset; ///< the translation offset in the getTrackNode() coordinate system.
     QOSGViewerWidget* _posgviewerwidget;
     double _transitionAnimationDuration; //< specifies how long the transition will take
@@ -1935,7 +1935,7 @@ void QOSGViewerWidget::mouseDoubleClickEvent(QMouseEvent *event)
 
 void QOSGViewerWidget::wheelEvent(QWheelEvent *event)
 {
-    int delta = event->delta();
+    int delta = event->angleDelta().y();
     osgGA::GUIEventAdapter::ScrollingMotion motion = delta > 0 ?
                                                      osgGA::GUIEventAdapter::SCROLL_UP
                                                      : osgGA::GUIEventAdapter::SCROLL_DOWN;
