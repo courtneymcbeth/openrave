@@ -26,7 +26,14 @@ Add Python3 bindings to python path:
 export PYTHONPATH=$PYTHONPATH:`openrave-config --python-dir`
 ```
 
-Optionally, add this line to `~/.bashrc`.
+Optionally, add this line to `~/.bashrc` or run:
+
+```bash
+cd build
+source openrave.bash
+```
+
+which sets the python path and others.
 
 ## Examples
 
@@ -34,6 +41,18 @@ Most Python examples are out of date and will not run. This one will at least ru
 
 ```bash
 openrave.py --example simplemanipulation
+```
+
+## Tests
+
+To run the python test cases:
+
+```bash
+sudo apt install python3-nose
+```
+
+```bash
+python3 test/run_tests.py
 ```
 
 
