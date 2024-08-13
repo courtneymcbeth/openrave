@@ -220,7 +220,7 @@ bool DynamicRaveDatabase::LoadPlugin(const std::string& libraryname)
 {
     std::string canonicalizedLibraryname = libraryname;
 #ifndef _WIN32
-    if(canonicalizedLibraryname.substr(0, 3) != "lib") {
+    if(canonicalizedLibraryname.substr(0, 3) != "lib" && canonicalizedLibraryname.substr(0, 5) != "/home" && canonicalizedLibraryname.substr(0, 5) != "/root") {
         canonicalizedLibraryname = "lib" + canonicalizedLibraryname;
     }
 #endif
@@ -311,13 +311,13 @@ bool DynamicRaveDatabase::_LoadPlugin(const std::string& strpath)
 {
     DynamicLibrary dylib(strpath);
     if (!dylib) {
-        RAVELOG_DEBUG_FORMAT("Failed to load shared object %s", strpath);
+        RAVELOG_WARN_FORMAT("Failed to load shared object %s", strpath);
         return false;
     }
     std::string errstr;
     void* psym = dylib.LoadSymbol("CreatePlugin", errstr);
     if (!psym) {
-        RAVELOG_DEBUG_FORMAT("%s, might not be an OpenRAVE plugin.", errstr);
+        RAVELOG_WARN_FORMAT("%s, might not be an OpenRAVE plugin.", errstr);
         return false;
     }
     RavePlugin* plugin = nullptr;

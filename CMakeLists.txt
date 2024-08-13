@@ -17,6 +17,7 @@ cmake_policy(SET CMP0002 NEW)
 cmake_policy(SET CMP0003 NEW)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Use, i.e. don't skip the full RPATH for the build tree
 set(CMAKE_SKIP_BUILD_RPATH  FALSE)
